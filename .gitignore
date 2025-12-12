@@ -1,0 +1,12 @@
+# Virtual Environment
+venv/
+
+# API Keys / Sensitive Data
+.env
+
+# Python Artifacts
+__pycache__/
+*.pyc
+
+# OS files
+.DS_Store
