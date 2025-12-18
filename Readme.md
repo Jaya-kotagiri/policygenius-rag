@@ -1,161 +1,115 @@
-# PolicyGenius RAG Bot ⚖️
 
-A **production-style Retrieval-Augmented Generation (RAG)** system for answering HR policy questions **strictly from company documents**, with observability via **LangSmith** and guardrails to prevent hallucinations.
+PolicyGenius: HR Policy RAG System
 
-This project is designed to demonstrate **real-world RAG engineering skills** suitable for mid-to-senior ML / AI roles.
+An enterprise-grade Retrieval-Augmented Generation (RAG) application built to provide precise, cited answers from company HR documents. This project addresses the metadata dilution problem commonly found in naive RAG systems by using header-aware chunking to preserve semantic and structural context.
 
----
+------------------------------------------------------------
 
-## 🚀 What This Bot Does
+Key Features
 
-- Answers **only HR policy questions** using provided documents
-- Refuses to answer personal, conversational, or out-of-scope queries
-- Avoids hallucination by:
-  - Strict prompting
-  - Retrieval-first architecture
-  - Zero-temperature LLM
-- Provides **auditable traces** using LangSmith
+Deterministic Reasoning
+Powered by Llama-3.3-70B-Versatile (via Groq) with temperature set to zero for audit-safe, deterministic responses.
 
----
+Smart Chunking
+Custom ingestion pipeline using regex-based header detection (for example, 7.2.1 Leave Policy) to ensure each response cites the exact governing clause.
 
-## 🧠 Architecture Overview
+Production Observability
+Integrated with LangSmith to trace retrieval accuracy, latency, and end-to-end reasoning behavior.
 
-```
-User Question
-     ↓
-Retriever (Chroma Vector DB)
-     ↓
-Relevant Policy Chunks
-     ↓
-Strict Prompt + LLM (Groq LLaMA 3.3 70B)
-     ↓
-Final Answer (with citation)
-```
+Dynamic Re-indexing
+Streamlit-based administrative control to refresh the vector database without restarting the application.
 
----
+------------------------------------------------------------
 
-## 📁 Project Structure
+System Architecture
 
-> **Data governance note:** Raw HR policy documents inside the `data/` directory are intentionally excluded from version control to prevent accidental sharing of proprietary or confidential company information.
+1. Document Ingestion
+PDF and DOCX files are parsed from the data directory.
 
+2. Metadata Enrichment
+Each chunk is enriched with source file name, page number, and policy section header.
 
+3. Vector Storage
+ChromaDB is used with all-MiniLM-L6-v2 embeddings for efficient semantic retrieval.
 
-```
-policygenius-rag/
-│
-├── app.py                 # Streamlit app (chat UI + RAG chain)
-├── ingest.py              # Document ingestion & vector DB builder
-├── requirements.txt       # Python dependencies
-├── README.md              # Project documentation
-├── .gitignore
-│
-├── data/                  # HR policy PDFs / DOCX (ignored by git)
-├── chroma_db/             # Vector database (ignored by git)
-└── .env                   # API keys (ignored by git)
-```
+4. Grounded Generation
+A system-level auditor prompt constrains the LLM to answer strictly from retrieved context and refuse unsupported queries.
 
----
+------------------------------------------------------------
 
-## 🔐 Environment Variables (`.env`)
+Tech Stack
 
-Create a `.env` file in the root directory:
+Framework: LangChain 0.2  
+LLM: Meta Llama 3.3 70B  
+Vector Database: ChromaDB  
+User Interface: Streamlit  
+Observability: LangSmith  
+Embeddings: HuggingFace Sentence Transformers  
 
-```env
-GROQ_API_KEY=your_groq_api_key
-LANGCHAIN_API_KEY=your_langsmith_api_key
-LANGCHAIN_TRACING_V2=true
-LANGCHAIN_PROJECT=policygenius-rag
-```
+------------------------------------------------------------
 
----
+Installation and Setup
 
-## 📦 Dependencies
+1. Clone the repository
 
-See `requirements.txt`. Core libraries:
+git clone https://github.com/your-username/policygenius-rag.git  
+cd policygenius-rag  
 
-- `streamlit` – UI
-- `langchain` ecosystem – RAG framework
-- `chromadb` – vector storage
-- `sentence-transformers` – embeddings
-- `langchain-groq` – LLM inference
-- `python-dotenv` – environment management
+2. Configure environment variables
 
----
+Create a .env file in the project root with the following entries:
 
-## 🧾 How to Run
+GROQ_API_KEY=your_groq_api_key  
+LANGCHAIN_API_KEY=your_langchain_api_key  
+LANGCHAIN_TRACING_V2=true  
+LANGCHAIN_PROJECT=policygenius-rag  
 
-### 1️⃣ Install dependencies
+3. Install dependencies
 
-```bash
-pip install -r requirements.txt
-```
+pip install -r requirements.txt  
 
-### 2️⃣ Add policy documents
+------------------------------------------------------------
 
-Place PDF / DOCX files inside:
+Usage
 
-```text
-data/
-```
+Add Documents  
+Create a data directory and place HR policy PDF or DOCX files inside it.
 
-### 3️⃣ Run the app
+Run the Application  
+streamlit run app.py  
 
-```bash
-streamlit run app.py
-```
+Initialize Index  
+Use the Streamlit sidebar option to re-index documents and build the local ChromaDB.
 
-### 4️⃣ Index documents
+Query the System  
+Example questions:
+- What is the policy for relocation grant?
+- How many privilege leaves can be carried forward?
 
-Use the **Admin Sidebar → Re-index Documents** button.
+------------------------------------------------------------
 
----
+Technical Decisions and Trade-offs
 
-## 🔍 Observability (LangSmith)
+Model Selection  
+Llama-3.3-70B was chosen to handle complex logical dependencies in legal and HR text that smaller models frequently hallucinate.
 
-All RAG steps are traced:
+Header-Aware Splitting  
+Ensures that section titles remain tightly coupled with their content, enabling precise citation and compliance-grade answers.
 
-- Retriever calls
-- Prompt construction
-- LLM response
+Zero Temperature  
+For HR and policy systems, creativity introduces risk. Deterministic decoding improves groundedness and auditability.
 
-You can inspect runs at:
+------------------------------------------------------------
 
-👉 https://smith.langchain.com
+Roadmap
 
-This allows you to **prove**:
-- Which documents were retrieved
-- Why a specific answer was generated
-- That the model did not hallucinate
+Hybrid search using BM25 for keyword-heavy queries  
+Cross-encoder re-ranking to improve top-1 retrieval accuracy  
+Local LLM support via Ollama for full data privacy  
 
----
+------------------------------------------------------------
 
-## 🧪 Design Decisions (Interview-Ready)
+Author
 
-- **Temperature = 0** → deterministic answers
-- **Strict prompt rules** → no guessing, no role-play
-- **Header-aware chunking** → accurate section citations
-- **Vector DB reset on re-ingestion** → avoids stale data
-
----
-
-## 🛑 Non-Goals
-
-- Not a general chatbot
-- Not trained on internal data
-- No fine-tuning (pure RAG)
-
----
-
-## 📌 Future Improvements
-
-- Hybrid Search (BM25 + Vector)
-- Query classification layer
-- Role-based access control
-- Evaluation dataset + automated testing
-
----
-
-## 👩‍💻 Author
-
-Built as a **portfolio-grade RAG system** to demonstrate applied LLM engineering, not a toy demo.
-
+Jayalaxmi Kotagiri  
+LinkedIn: https://www.linkedin.com/in/jaya-kotagiri/
