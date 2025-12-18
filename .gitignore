@@ -10,3 +10,17 @@ __pycache__/
 
 # OS files
 .DS_Store
+
+# Vector Storage
+chroma_db/
+
+# Data 
+data/
+
+# Streamlit cache + logs
+.streamlit/
+*.log
+
+# Extras
+*.png
+*.pdf
