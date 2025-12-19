@@ -52,15 +52,15 @@ Installation and Setup
 
 1. Clone the repository
 
-git clone https://github.com/your-username/policygenius-rag.git  
+git clone https://github.com/jaya-kotagiri/policygenius-rag.git 
 cd policygenius-rag  
 
 2. Configure environment variables
 
 Create a .env file in the project root with the following entries:
 
-GROQ_API_KEY=your_groq_api_key  
-LANGCHAIN_API_KEY=your_langchain_api_key  
+GROQ_API_KEY=groq_api_key  
+LANGCHAIN_API_KEY=langchain_api_key  
 LANGCHAIN_TRACING_V2=true  
 LANGCHAIN_PROJECT=policygenius-rag  
 
